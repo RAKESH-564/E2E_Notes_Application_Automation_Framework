@@ -7,8 +7,9 @@ pipeline {
     environment {
 
         HEADLESS = 'true'
-
         REMOTE = 'false'
+        LONGCAT_API_KEY = credentials('longcat-api-key')
+        
     }
 
     stages {
