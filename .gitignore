@@ -1,0 +1,62 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+venv/
+.venv/
+env/
+
+# Pytest cache
+.pytest_cache/
+
+# Allure reports
+allure-results/
+allure-report/
+reports/
+
+# Screenshots
+screenshots/
+*.png
+
+# Logs
+logs/
+*.log
+
+# IDE files
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment/config secrets
+.env
+
+# Build files
+dist/
+build/
+*.egg-info/
+
+# Selenium webdriver binaries
+chromedriver
+chromedriver.exe
+
+# Coverage reports
+htmlcov/
+.coverage
+
+# Temporary files
+*.tmp
+*.bak
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Node modules (if any)
+node_modules/
+
+# Mac/Linux hidden files
+*.swp

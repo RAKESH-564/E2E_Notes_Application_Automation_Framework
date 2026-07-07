@@ -1,0 +1,34 @@
+{
+    "LOGIN_BUTTON": [
+        {
+            "type": "css",
+            "value": "button[type='submit']"
+        },
+        {
+            "type": "xpath",
+            "value": "//button[contains(text(),'Login')]"
+        }
+    ],
+
+    "ADD_NOTE_BUTTON": [
+        {
+            "type": "css",
+            "value": "button[data-testid='add-new-note']"
+        },
+        {
+            "type": "xpath",
+            "value": "//button[contains(text(),'Add Note')]"
+        }
+    ],
+
+    "SAVE_NOTE_BUTTON": [
+        {
+            "type": "css",
+            "value": "button[type='submit']"
+        },
+        {
+            "type": "xpath",
+            "value": "//button[contains(text(),'Create')]"
+        }
+    ]
+}

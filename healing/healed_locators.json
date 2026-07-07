@@ -1,0 +1,6 @@
+{
+    "ADD_NOTE_BUTTON": {
+        "type": "css",
+        "value": "button[data-testid='add-new-note']"
+    }
+}
