@@ -1,3 +1,156 @@
+// pipeline {
+
+//     agent {
+//         label 'windows'
+//     }
+
+//     environment {
+
+//         HEADLESS = 'true'
+//         REMOTE = 'false'
+//         LONGCAT_API_KEY = credentials('longcat-api-key')
+        
+//     }
+
+//     stages {
+
+//         stage('Checkout Code') {
+
+//             steps {
+
+//                 checkout scm
+
+//                 echo 'Code downloaded successfully'
+//             }
+//         }
+
+//         // stage('Start Selenium Grid') {
+
+//         //     steps {
+
+//         //         bat '''
+//         //             docker-compose up -d
+//         //         '''
+//         //     }
+//         // }
+
+//         stage('Install Dependencies') {
+
+//             steps {
+
+//                 bat '''
+//                     python -m venv .venv
+
+//                     call .venv\\Scripts\\activate
+
+//                     python -m pip install --upgrade pip
+
+//                     pip install -r requirements.txt
+//                 '''
+//             }
+//         }
+
+//         stage('Run API Tests') {
+
+//             steps {
+                
+//                 catchError(
+//                     buildResult: 'SUCCESS',
+//                     stageResult: 'FAILURE'
+//                 ) {
+
+//                 bat '''
+//                     call .venv\\Scripts\\activate
+
+//                     pytest tests/test_api_notes.py -v --alluredir=reports/allure-results
+//                 '''
+//                 }
+//             }
+
+//         }
+
+//         stage('Run UI Login Tests') {
+
+//             steps {
+
+//                 bat '''
+//                     call .venv\\Scripts\\activate
+
+//                     pytest tests/test_login.py -v --alluredir=reports/allure-results
+//                 '''
+//             }
+//         }
+
+//         stage('Run UI Notes Tests') {
+
+//             steps {
+
+//                 bat '''
+//                     call .venv\\Scripts\\activate
+
+//                     pytest tests/test_product.py -v --alluredir=reports/allure-results
+//                 '''
+//             }
+//         }
+
+//         stage('Run E2E Tests') {
+
+//             steps {
+
+//                 bat '''
+//                     call .venv\\Scripts\\activate
+
+//                     pytest tests/test_e2e_hybrid.py -v --alluredir=reports/allure-results
+//                 '''
+//             }
+//         }
+
+//         stage('Generate Allure Report') {
+
+//             steps {
+
+//                 allure([
+//                     includeProperties: false,
+//                     jdk: '',
+//                     results: [[path: 'reports/allure-results']]
+//                 ])
+//             }
+//         }
+
+//         stage('Archive Reports') {
+
+//             steps {
+
+//                 archiveArtifacts artifacts: 'reports/**/*', fingerprint: true
+
+//                 echo 'Reports archived successfully'
+//             }
+//         }
+//     }
+
+//     post {
+
+//         always {
+
+//             // bat '''
+//             //     docker-compose down
+//             // '''
+
+//             echo 'Pipeline execution completed'
+//         }
+
+//         success {
+
+//             echo 'Build completed successfully'
+//         }
+
+//         failure {
+
+//             echo 'Build failed'
+//         }
+
+
+
 pipeline {
 
     agent {
@@ -5,125 +158,151 @@ pipeline {
     }
 
     environment {
-
         HEADLESS = 'true'
         REMOTE = 'false'
         LONGCAT_API_KEY = credentials('longcat-api-key')
-        
     }
 
     stages {
 
         stage('Checkout Code') {
-
             steps {
-
                 checkout scm
-
                 echo 'Code downloaded successfully'
             }
         }
 
-        // stage('Start Selenium Grid') {
-
-        //     steps {
-
-        //         bat '''
-        //             docker-compose up -d
-        //         '''
-        //     }
-        // }
-
         stage('Install Dependencies') {
-
             steps {
-
                 bat '''
-                    python -m venv .venv
+                    if not exist .venv (
+                        python -m venv .venv
+                    )
 
                     call .venv\\Scripts\\activate
 
                     python -m pip install --upgrade pip
 
-                    pip install -r requirements.txt
+                    python -m pip install -r requirements.txt
+                '''
+            }
+        }
+
+        stage('Clean Previous Allure Results') {
+            steps {
+                bat '''
+                    if exist reports\\allure-results (
+                        rmdir /s /q reports\\allure-results
+                    )
+
+                    mkdir reports\\allure-results
                 '''
             }
         }
 
         stage('Run API Tests') {
-
             steps {
-                
                 catchError(
-                    buildResult: 'SUCCESS',
+                    buildResult: 'UNSTABLE',
                     stageResult: 'FAILURE'
                 ) {
+                    bat '''
+                        call .venv\\Scripts\\activate
 
-                bat '''
-                    call .venv\\Scripts\\activate
+                        echo ==============================
+                        echo RUNNING API TESTS
+                        echo ==============================
 
-                    pytest tests/test_api_notes.py -v --alluredir=reports/allure-results
-                '''
+                        python -m pytest tests/test_api_notes.py -v --alluredir=reports/allure-results
+                    '''
                 }
             }
-
         }
 
         stage('Run UI Login Tests') {
-
             steps {
+                catchError(
+                    buildResult: 'UNSTABLE',
+                    stageResult: 'FAILURE'
+                ) {
+                    bat '''
+                        call .venv\\Scripts\\activate
 
-                bat '''
-                    call .venv\\Scripts\\activate
+                        echo ==============================
+                        echo RUNNING UI LOGIN TESTS
+                        echo HEADLESS=%HEADLESS%
+                        echo ==============================
 
-                    pytest tests/test_login.py -v --alluredir=reports/allure-results
-                '''
+                        python -m pytest tests/test_login.py -v --alluredir=reports/allure-results
+                    '''
+                }
             }
         }
 
         stage('Run UI Notes Tests') {
-
             steps {
+                catchError(
+                    buildResult: 'UNSTABLE',
+                    stageResult: 'FAILURE'
+                ) {
+                    bat '''
+                        call .venv\\Scripts\\activate
 
-                bat '''
-                    call .venv\\Scripts\\activate
+                        echo ==============================
+                        echo RUNNING UI NOTES TESTS
+                        echo HEADLESS=%HEADLESS%
+                        echo ==============================
 
-                    pytest tests/test_product.py -v --alluredir=reports/allure-results
-                '''
+                        python -m pytest tests/test_product.py -v --alluredir=reports/allure-results
+                    '''
+                }
             }
         }
 
         stage('Run E2E Tests') {
-
             steps {
+                catchError(
+                    buildResult: 'UNSTABLE',
+                    stageResult: 'FAILURE'
+                ) {
+                    bat '''
+                        call .venv\\Scripts\\activate
 
-                bat '''
-                    call .venv\\Scripts\\activate
+                        echo ==============================
+                        echo RUNNING E2E TESTS
+                        echo HEADLESS=%HEADLESS%
+                        echo ==============================
 
-                    pytest tests/test_e2e_hybrid.py -v --alluredir=reports/allure-results
-                '''
+                        python -m pytest tests/test_e2e_hybrid.py -v --alluredir=reports/allure-results
+                    '''
+                }
             }
         }
 
-        stage('Generate Allure Report') {
-
+        stage('Generate Final Allure Report') {
             steps {
+                echo 'All test sections completed'
+                echo 'Generating one combined Allure report'
 
                 allure([
                     includeProperties: false,
                     jdk: '',
-                    results: [[path: 'reports/allure-results']]
+                    results: [[
+                        path: 'reports/allure-results'
+                    ]]
                 ])
             }
         }
 
-        stage('Archive Reports') {
-
+        stage('Archive Final Reports') {
             steps {
+                archiveArtifacts(
+                    artifacts: 'reports/**/*',
+                    fingerprint: true,
+                    allowEmptyArchive: true
+                )
 
-                archiveArtifacts artifacts: 'reports/**/*', fingerprint: true
-
-                echo 'Reports archived successfully'
+                echo 'Final reports archived successfully'
             }
         }
     }
@@ -131,22 +310,22 @@ pipeline {
     post {
 
         always {
-
-            // bat '''
-            //     docker-compose down
-            // '''
-
             echo 'Pipeline execution completed'
         }
 
         success {
+            echo 'All test stages completed successfully'
+        }
 
-            echo 'Build completed successfully'
+        unstable {
+            echo 'All test stages completed, but one or more tests failed'
+            echo 'Check the final combined Allure report'
         }
 
         failure {
-
-            echo 'Build failed'
+            echo 'Pipeline infrastructure failed'
         }
     }
 }
+//     }
+// }
