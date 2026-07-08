@@ -6,7 +6,8 @@ pipeline {
 
     environment {
         HEADLESS = 'true'
-        REMOTE = 'false'
+        REMOTE = 'true'
+        SELENIUM_GRID_URL = 'http://localhost:4444/wd/hub'
         LONGCAT_API_KEY = credentials('longcat-api-key')
     }
 
